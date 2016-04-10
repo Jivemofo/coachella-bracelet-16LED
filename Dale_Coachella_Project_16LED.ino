@@ -48,6 +48,8 @@ long
   buttonStart = 0,         // marks when the button was first pushed
   lastDebounceTime = 0,  // the last time the output pin was toggled
   debounceDelay = 50;    // the debounce time; increase if the output flickers
+  
+const long interval = 100;           // interval at which to blink (milliseconds)  
 uint32_t currentColor = 0;  // set the first color to black;
 
 volatile int lightMode = 0; // how many times the button has been pressed
@@ -57,7 +59,7 @@ uint16_t
   count1 = 0,
   count2 = 0;
 
-unsigned long previousMillis;
+unsigned long previousMillis = 0;
 
 //vuMeter variables
 byte
@@ -206,16 +208,19 @@ uint32_t Wheel(byte WheelPos) {
   }
   
   void rainbowUpdate() {
-    uint16_t i;
+   uint16_t i, j;
+   unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+  for(j=0; j<256; j++) {
     for(i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((i+count1) & 255));
+      strip.setPixelColor(i, Wheel((i+j) & 255));
+    }
     strip.show();
-    count1++;
-    if(count1 == strip.numPixels()) {
-      count1 = 0;
+    previousMillis = currentMillis;
+    
     }
   }
-  }
+}
   
   // Slightly different, this makes the rainbow equally distributed throughout
   void rainbowCycleUpdate() {
