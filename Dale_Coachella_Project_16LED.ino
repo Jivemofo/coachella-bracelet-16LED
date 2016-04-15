@@ -15,8 +15,8 @@
 #define TPIXEL 16 //The total amount of pixel's/led's in your connected strip/stick (Default is 60)
 #define BUTTONPIN 12 // the number of the pushbutton pin
 #define MIC_PIN   A1  // Microphone is attached to this analog pin
-#define DC_OFFSET  -128  // DC offset in mic signal - if unusure, leave 0
-#define NOISE     40  // Noise/hum/interference in mic signal
+#define DC_OFFSET  0  // DC offset in mic signal - if unusure, leave 0
+#define NOISE     200  // Noise/hum/interference in mic signal
 #define SAMPLES   60  // Length of buffer for dynamic level adjustment
 #define TOP       (TPIXEL + 2) // Allow dot to go slightly off scale
 #define PEAK_FALL 40  // Rate of peak falling dot
@@ -33,7 +33,7 @@
 
 const int longPressDuration = 750; // duration of a long press in milliseconds
 const int brightnessLevels = 4; //defines how many brightness levels will be used
-const int minBrightness = 20; //defines the lowest brightness level from 0-255
+const int minBrightness = 10; //defines the lowest brightness level from 0-255
 const int maxBrightness = 255; //defines the maximum brightness level from 0-255
 
 // variables will change:
@@ -208,18 +208,15 @@ uint32_t Wheel(byte WheelPos) {
   }
   
   void rainbowUpdate() {
-   uint16_t i, j;
-   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-  for(j=0; j<256; j++) {
+    uint16_t i;
     for(i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((i+j) & 255));
-    }
+      strip.setPixelColor(i, Wheel((i+count1++) & 255));}
     strip.show();
-    previousMillis = currentMillis;
-    
+    count1++;
+    if(count1 == strip.numPixels()) {
+      count1 = 0;
     }
-  }
+
 }
   
   // Slightly different, this makes the rainbow equally distributed throughout
@@ -352,7 +349,7 @@ uint32_t Wheel(byte WheelPos) {
   // Calculate bar height based on dynamic min/max levels (fixed point):
   height = TOP/2 * (lvl - minLvlAvg) / (long)(maxLvlAvg - minLvlAvg);
  
-  if(height < 0L)       height = 0;      // Clip output
+  if(height < 0)       height = 0;      // Clip output
   else if(height > TOP/2) height = TOP/2;
   if(height > peak)     peak   = height; // Keep 'peak' dot at top
  
